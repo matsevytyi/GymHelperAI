@@ -46,6 +46,8 @@ struct ExerciseListView: View {
             if let exercise = exerciseManager.selectedExercise {
                 
                 Text(exercise.description)
+                
+                VideoComparisonView()
             }
         }
     }

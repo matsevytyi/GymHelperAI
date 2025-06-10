@@ -12,9 +12,9 @@ import SwiftUI
 import Combine
 
 class ExerciseManager: ObservableObject {
+    
     @Published var exercises: [Exercise] = []
     @Published var selectedExercise: Exercise?
-    @Published var currentAnalysis: ExerciseAnalysis?
 
     init() {
         loadExercises()
