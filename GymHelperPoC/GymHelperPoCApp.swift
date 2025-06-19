@@ -13,6 +13,7 @@ import SwiftUI
 struct GymHelperPoCApp: App {
     var body: some Scene {
         WindowGroup {
+            //CameraAnalysisView()
             ContentView()
             //VideoComparisonView()
             //SingleVideoView()

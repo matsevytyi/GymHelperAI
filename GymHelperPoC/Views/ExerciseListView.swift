@@ -45,10 +45,9 @@ struct ExerciseListView: View {
         .sheet(isPresented: $showingCamera) {
             if let exercise = exerciseManager.selectedExercise {
                 
-                Text(exercise.description)
-                
-                VideoComparisonView()
+                CameraSheetView(showingCamera: $showingCamera, exercise: exercise)
             }
         }
     }
 }
+
