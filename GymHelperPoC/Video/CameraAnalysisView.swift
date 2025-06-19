@@ -10,6 +10,18 @@ import SwiftUI
 import AVFoundation
 
 
+struct CameraAnalysisView: View {
+    @StateObject private var cameraManager = CameraManager()
+
+    var body: some View {
+        CameraPreviewView(session: cameraManager.session)
+            .ignoresSafeArea()
+            .onDisappear {
+                cameraManager.stopSession()
+            }
+    }
+}
+
 struct CameraPreviewView: UIViewRepresentable {
     let session: AVCaptureSession
 
@@ -33,3 +45,7 @@ class VideoPreviewView: UIView {
     }
 }
 
+
+#Preview {
+    //CameraAnalysisView()
+}
