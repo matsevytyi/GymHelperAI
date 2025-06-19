@@ -9,10 +9,36 @@
 import SwiftUI
 import AVFoundation
 
+// MARK: wrapper for Mac Catalyst (unnsupported function solved)
+struct CameraSheetView: View {
+    @Binding var showingCamera: Bool
+    var exercise: Exercise
+
+    var body: some View {
+        VStack {
+            
+            #if targetEnvironment(macCatalyst)
+            HStack {
+                Spacer()
+                Button(action: {
+                    showingCamera = false
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title)
+                        .padding()
+                }
+            }
+            #endif
+
+            Text(exercise.description)
+            CameraAnalysisView()
+        }
+    }
+}
 
 struct CameraAnalysisView: View {
     @StateObject private var cameraManager = CameraManager()
-
+    
     var body: some View {
         CameraPreviewView(session: cameraManager.session)
             .ignoresSafeArea()
