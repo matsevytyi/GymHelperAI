@@ -10,7 +10,6 @@ import AVKit
 import Vision
 import CoreML
 
-@MainActor
 class SimpleYOLOAnalyzer: ObservableObject {
     
     @Published var userVideo: URL?
@@ -40,7 +39,7 @@ class SimpleYOLOAnalyzer: ObservableObject {
                 print("Failed to load YOLO model: \(error)")
             }
         }
-    
+
     func runAnalysis() {
         guard let userURL = userVideo, let refURL = referenceVideo else { return }
         
@@ -125,6 +124,88 @@ class SimpleYOLOAnalyzer: ObservableObject {
         return buffer
     }
 
+    private func parseRawYOLOOutput(prediction: yolov8n_pose_modelOutput) -> [CGPoint] {
+        guard let multiArray = prediction.featureValue(for: "var_1035")?.multiArrayValue else {
+            print("No multiArray output")
+            return []
+        }
+
+        let ptr = UnsafeMutablePointer<Float32>(OpaquePointer(multiArray.dataPointer))
+
+        let channels = 56  // 4 bbox + 1 obj + 51 keypoints
+        let anchors = 8400
+
+        var bestObjectness: Float32 = 0
+        var bestIndex: Int = -1
+
+        // Step 1: Find anchor with highest objectness (channel index 4)
+        for i in 0..<anchors {
+            let obj = ptr[4 * anchors + i]
+            if obj > bestObjectness {
+                bestObjectness = obj
+                bestIndex = i
+            }
+        }
+
+        guard bestIndex != -1, bestObjectness > 0.5 else {
+            print("No object detected")
+            return []
+        }
+
+        // Step 2: Extract 17 keypoints (from channel 5 to 55)
+        var keypoints: [CGPoint] = []
+
+        for kp in 0..<17 {
+            let x = ptr[(5 + kp * 3) * anchors + bestIndex]
+            let y = ptr[(5 + kp * 3 + 1) * anchors + bestIndex]
+            let conf = ptr[(5 + kp * 3 + 2) * anchors + bestIndex]
+
+            if conf > 0.5 {
+                keypoints.append(CGPoint(x: CGFloat(x) / 640.0, y: CGFloat(y) / 640.0)) // normalize
+            } else {
+                keypoints.append(.zero) // or skip, or set to nil if you change the type
+            }
+        }
+
+        return keypoints
+    }
+
+    
+//    private func parseRawYOLOOutput(prediction: yolov8n_pose_modelOutput) {
+//        guard let multiArray = prediction.featureValue(for: "var_1035")?.multiArrayValue else {
+//            print("No multiArray output")
+//            return
+//        }
+//
+//        // Access raw pointer to the multi-array data
+//        let ptr = UnsafeMutablePointer<Float32>(OpaquePointer(multiArray.dataPointer))
+//
+//        // Constants from model design
+//        let channels = 56
+//        let width = 8400
+//
+//        for keypointIndex in 0..<channels {
+//            var maxConfidence: Float32 = 0
+//            var maxIndex: Int = 0
+//
+//            for i in 0..<width {
+//                let confidence = ptr[keypointIndex * width + i]
+//                if confidence > maxConfidence {
+//                    maxConfidence = confidence
+//                    maxIndex = i
+//                }
+//            }
+//
+//            if maxConfidence > 0.5 {  // Threshold
+//                // Convert maxIndex to (x, y) coordinates depending on model grid size
+//                let x = maxIndex % 640
+//                let y = maxIndex / 640
+//
+//                print("Keypoint \(keypointIndex): x=\(x), y=\(y), confidence=\(maxConfidence)")
+//            }
+//        }
+//
+//    }
 
     
     private func parseYOLOOutput(_ prediction: MLFeatureProvider) -> [CGPoint] {
