@@ -39,7 +39,36 @@ class SimpleYOLOAnalyzer: ObservableObject {
                 print("Failed to load YOLO model: \(error)")
             }
         }
+    
+    func processLiveFrame(_ pixelBuffer: CVPixelBuffer) {
+        guard let model = yoloModel else { return }
 
+        do {
+            let input = yolov8n_pose_modelInput(image: pixelBuffer)
+            let prediction = try model.prediction(input: input)
+            print(prediction.featureNames)
+
+            let keypoints = parseRawYOLOOutput(prediction: prediction)
+            print("Detected \(keypoints.count) keypoints")
+            
+//            if let output = prediction.featureValue(for: "var_1035") {
+//                print("Output shape:", output.multiArrayValue?.shape ?? "no multiArray")
+//                print("Output values:", output.multiArrayValue ?? "no multiArray")
+//            } else {
+//                print("No output for key var_1035")
+//            }
+            
+
+//            await MainActor.run {
+//                self.userPoses = keypoints
+//            }
+
+        } catch {
+            print("Live frame processing error: \(error)")
+        }
+    }
+
+    
     func runAnalysis() {
         guard let userURL = userVideo, let refURL = referenceVideo else { return }
         
