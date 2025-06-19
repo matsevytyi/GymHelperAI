@@ -6,13 +6,20 @@
 //
 
 import AVFoundation
+import Accelerate
+import SwiftUI
 
 
 /// Captures videostream from camera and handles permissions
-class CameraManager: NSObject, ObservableObject {
+class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     let session = AVCaptureSession()
     private var sessionQueue = DispatchQueue(label: "camera.session")
+    private var videoQueue = DispatchQueue(label: "camera.video")
+    
+    private var poseDetector = SimpleYOLOAnalyzer()
+    private let videoOutput = AVCaptureVideoDataOutput()
+    
     
     override init() {
         super.init()
@@ -46,6 +53,8 @@ class CameraManager: NSObject, ObservableObject {
         sessionQueue.async {
             self.session.beginConfiguration()
             //self.session.sessionPreset = .high
+            
+            self.session.sessionPreset = .vga640x480
 
             let discovery = AVCaptureDevice.DiscoverySession(
                 deviceTypes: [.builtInWideAngleCamera],
@@ -67,7 +76,19 @@ class CameraManager: NSObject, ObservableObject {
             }
 
             self.session.addInput(input)
+            
+            self.videoOutput.setSampleBufferDelegate(self, queue: self.videoQueue)
+            self.videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+            
+            guard self.session.canAddOutput(self.videoOutput) else {
+                print("Cannot add video output")
+                return
+            }
+            
+            self.session.addOutput(self.videoOutput)
+            
             self.session.commitConfiguration()
+            
             self.session.startRunning()
         }
     }
@@ -87,4 +108,63 @@ class CameraManager: NSObject, ObservableObject {
             }
         }
     }
+    
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+
+            guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        
+            guard let modifiedBuffer = resizePixelBuffer(pixelBuffer, width: 640, height: 640) else { return }
+
+            // YOLO on pixelBuffer
+            self.poseDetector.processLiveFrame(modifiedBuffer)
+            
+        }
+    
+    private func resizePixelBuffer(_ pixelBuffer: CVPixelBuffer, width: Int, height: Int) -> CVPixelBuffer? {
+        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly) }
+
+        guard let srcBaseAddr = CVPixelBufferGetBaseAddress(pixelBuffer) else { return nil }
+
+        let srcWidth = CVPixelBufferGetWidth(pixelBuffer)
+        let srcHeight = CVPixelBufferGetHeight(pixelBuffer)
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
+
+        var srcBuffer = vImage_Buffer(
+            data: srcBaseAddr,
+            height: vImagePixelCount(srcHeight),
+            width: vImagePixelCount(srcWidth),
+            rowBytes: bytesPerRow
+        )
+
+        var destPixelBuffer: CVPixelBuffer?
+        CVPixelBufferCreate(
+            nil,
+            width,
+            height,
+            CVPixelBufferGetPixelFormatType(pixelBuffer),
+            nil,
+            &destPixelBuffer
+        )
+
+        guard let dst = destPixelBuffer else { return nil }
+
+        CVPixelBufferLockBaseAddress(dst, [])
+        defer { CVPixelBufferUnlockBaseAddress(dst, []) }
+
+        var dstBuffer = vImage_Buffer(
+            data: CVPixelBufferGetBaseAddress(dst),
+            height: vImagePixelCount(height),
+            width: vImagePixelCount(width),
+            rowBytes: CVPixelBufferGetBytesPerRow(dst)
+        )
+
+        //  Fast resize
+        vImageScale_ARGB8888(&srcBuffer, &dstBuffer, nil, vImage_Flags(0))
+
+        return dst
+    }
+
+    
+
 }
