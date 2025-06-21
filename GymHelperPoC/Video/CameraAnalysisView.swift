@@ -40,11 +40,17 @@ struct CameraAnalysisView: View {
     @StateObject private var cameraManager = CameraManager()
     
     var body: some View {
-        CameraPreviewView(session: cameraManager.session)
-            .ignoresSafeArea()
-            .onDisappear {
-                cameraManager.stopSession()
-            }
+        
+        ZStack {
+            CameraPreviewView(session: cameraManager.session)
+                .ignoresSafeArea()
+                .onDisappear {
+                    cameraManager.stopSession()
+                }
+                    
+                PoseOverlay(poses: cameraManager.currentPoses, badJoints: cameraManager.currentBadJoints)
+                        .allowsHitTesting(false)
+                }
     }
 }
 
