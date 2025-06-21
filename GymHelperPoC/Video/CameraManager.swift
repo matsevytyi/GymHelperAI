@@ -20,10 +20,22 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
     private var poseDetector = SimpleYOLOAnalyzer()
     private let videoOutput = AVCaptureVideoDataOutput()
     
+    @Published var currentPoses: [CGPoint] = []
+    @Published var currentBadJoints: Set<Int> = []
+
+    
     
     override init() {
         super.init()
+        
         checkPermissionAndConfigureSession()
+        
+        poseDetector.onPoseDetected = { [weak self] keypoints, badJoints in
+            DispatchQueue.main.async {
+                self?.currentPoses = keypoints
+                self?.currentBadJoints = badJoints
+            }
+        }
     }
     
     private func checkPermissionAndConfigureSession() {

@@ -19,6 +19,8 @@ class SimpleYOLOAnalyzer: ObservableObject {
     @Published var problematicJoints: Set<Int> = []
     @Published var results: [String] = []
     
+    var onPoseDetected: ((_ keypoints: [CGPoint], _ badJoints: Set<Int>) -> Void)? = nil
+    
     private var yoloModel: yolov8n_pose_model?
     
     var canAnalyze: Bool {
@@ -40,15 +42,17 @@ class SimpleYOLOAnalyzer: ObservableObject {
             }
         }
     
-    func processLiveFrame(_ pixelBuffer: CVPixelBuffer) {
-        guard let model = yoloModel else { return }
-
+    func processLiveFrame(_ pixelBuffer: CVPixelBuffer) -> [CGPoint]? {
+        //guard let model = yoloModel else { throw Error }
+        let model = yoloModel!
+        
         do {
             let input = yolov8n_pose_modelInput(image: pixelBuffer)
             let prediction = try model.prediction(input: input)
             print(prediction.featureNames)
 
             let keypoints = parseRawYOLOOutput(prediction: prediction)
+            print(keypoints)
             print("Detected \(keypoints.count) keypoints")
             
 //            if let output = prediction.featureValue(for: "var_1035") {
@@ -62,10 +66,17 @@ class SimpleYOLOAnalyzer: ObservableObject {
 //            await MainActor.run {
 //                self.userPoses = keypoints
 //            }
+            //let badJoints: Set<Int> = calculateBadJoints(from: keypoints) // Optional logic
+            let badJoints: Set<Int> = Set()
+            onPoseDetected?(keypoints, badJoints)
+
+            
+            return keypoints
 
         } catch {
             print("Live frame processing error: \(error)")
         }
+        return nil
     }
 
     
@@ -167,7 +178,7 @@ class SimpleYOLOAnalyzer: ObservableObject {
         var bestObjectness: Float32 = 0
         var bestIndex: Int = -1
 
-        // Step 1: Find anchor with highest objectness (channel index 4)
+        // Find anchor with highest objectness (channel index 4)
         for i in 0..<anchors {
             let obj = ptr[4 * anchors + i]
             if obj > bestObjectness {
@@ -181,18 +192,19 @@ class SimpleYOLOAnalyzer: ObservableObject {
             return []
         }
 
-        // Step 2: Extract 17 keypoints (from channel 5 to 55)
+        // Extract 17 keypoints (from channel 5 to 55)
         var keypoints: [CGPoint] = []
 
         for kp in 0..<17 {
+            
             let x = ptr[(5 + kp * 3) * anchors + bestIndex]
             let y = ptr[(5 + kp * 3 + 1) * anchors + bestIndex]
             let conf = ptr[(5 + kp * 3 + 2) * anchors + bestIndex]
 
             if conf > 0.5 {
-                keypoints.append(CGPoint(x: CGFloat(x) / 640.0, y: CGFloat(y) / 640.0)) // normalize
+                keypoints.append(CGPoint(x: 1 - CGFloat(x) / 640.0, y: CGFloat(y) / 640.0)) // normalize
             } else {
-                keypoints.append(.zero) // or skip, or set to nil if you change the type
+                keypoints.append(.zero)
             }
         }
 
