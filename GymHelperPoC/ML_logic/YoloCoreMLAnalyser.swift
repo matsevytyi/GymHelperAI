@@ -52,8 +52,8 @@ class SimpleYOLOAnalyzer: ObservableObject {
             print(prediction.featureNames)
 
             let keypoints = parseRawYOLOOutput(prediction: prediction)
-            print(keypoints)
-            print("Detected \(keypoints.count) keypoints")
+            // print(keypoints)
+            // print("Detected \(keypoints.count) keypoints")
             
 //            if let output = prediction.featureValue(for: "var_1035") {
 //                print("Output shape:", output.multiArrayValue?.shape ?? "no multiArray")
