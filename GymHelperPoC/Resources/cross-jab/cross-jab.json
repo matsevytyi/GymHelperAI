@@ -1,11 +1,11 @@
 [
   {
-  "name": "Push Up",
+  "name": "Cross",
   "icon": "flame.fill",
-  "difficulty": "Medium",
+  "difficulty": "Easy",
   "duration": "00:01:00",
   "rating": 4.5,
-  "description": "A basic push-up exercise that works the chest, shoulders, and triceps.",
+  "description": "A basic exercise for boxing",
   "movementSequence": [
     {
   "visual_lnk": "library-cross-jab-0",

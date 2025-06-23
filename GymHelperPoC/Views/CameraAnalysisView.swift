@@ -14,7 +14,15 @@ import _AVKit_SwiftUI
 struct CameraSheetView: View {
     @Binding var showingCamera: Bool
     var exercise: Exercise
-    var videolink = "library-cross"
+
+    @State private var currentStepIndex = 0
+    @State private var currentVideoName: String
+
+    init(showingCamera: Binding<Bool>, exercise: Exercise) {
+        self._showingCamera = showingCamera
+        self.exercise = exercise
+        _currentVideoName = State(initialValue: exercise.movementSequence.first?.visual_lnk ?? "")
+    }
 
     var body: some View {
         VStack {
@@ -34,14 +42,16 @@ struct CameraSheetView: View {
 
             Text(exercise.description)
 
-            if let player = loadPlayer(for: videolink) {
+            if let player = loadPlayer(for: currentVideoName) {
                     VideoPlayer(player: player)
                         .frame(height: 200)
                         .background(Color.black.opacity(0))
                         .onAppear { player.play() }
                 }
 
-            CameraAnalysisView()
+            CameraAnalysisView(currentCheckpoint: exercise.movementSequence[currentStepIndex]) {
+                advanceStep()
+            }
         }
     }
 
@@ -64,10 +74,24 @@ struct CameraSheetView: View {
         }
         return nil
     }
+
+    func advanceStep() {
+        if currentStepIndex < exercise.movementSequence.count - 1 {
+            currentStepIndex += 1
+            currentVideoName = exercise.movementSequence[currentStepIndex].visual_lnk
+        }
+    }
+
 }
 
 struct CameraAnalysisView: View {
     @StateObject private var cameraManager = CameraManager()
+    
+    let currentCheckpoint: Position
+    let onPoseMatched: () -> Void
+    
+    @State private var hasMatchedCurrentStep = false
+    @State private var currentBadJoints: Set<Int> = []
     
     var body: some View {
         
@@ -77,11 +101,30 @@ struct CameraAnalysisView: View {
                 .onDisappear {
                     cameraManager.stopSession()
                 }
-                    
-                PoseOverlay(poses: cameraManager.currentPoses, badJoints: cameraManager.currentBadJoints)
-                        .allowsHitTesting(false)
+            
+            PoseOverlay(poses: cameraManager.currentUserPoses, badJoints: currentBadJoints)
+                .allowsHitTesting(false)
+        }
+        
+        .onChange(of: cameraManager.currentUserPoses)
+        { newPoses in
+            guard !hasMatchedCurrentStep else { return }
+            
+            let (matched, badJoints) = checkPoseMatch(userPose: newPoses, basePose: currentCheckpoint)
+            
+            if matched {
+                hasMatchedCurrentStep = true
+                onPoseMatched()
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    // next step matching
+                    hasMatchedCurrentStep = false
                 }
+                
+            }
+        }
     }
+
 }
 
 struct CameraPreviewView: UIViewRepresentable {
