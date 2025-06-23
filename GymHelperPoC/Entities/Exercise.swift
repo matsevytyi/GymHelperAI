@@ -18,13 +18,16 @@ struct Exercise: Identifiable, Codable {
     let duration: String
     let rating: Double
     let description: String
-    let keyPoints: [String]
+    
+    let videoName: String
+    let movementSequence: [Position]
 
     enum CodingKeys: String, CodingKey {
-        case name, icon, difficulty, duration, rating, description, keyPoints
+        case name, icon, difficulty, duration, rating, description, initialPosition, movementSequence
     }
 
-    init(name: String, icon: String, color: Color, difficulty: String, duration: String, rating: Double, description: String, keyPoints: [String]) {
+
+    init(name: String, icon: String, color: Color, difficulty: String, duration: String, rating: Double, description: String, videoName: String, movementSequence: [Position]) {
         self.name = name
         self.icon = icon
         self.color = color
@@ -32,7 +35,8 @@ struct Exercise: Identifiable, Codable {
         self.duration = duration
         self.rating = rating
         self.description = description
-        self.keyPoints = keyPoints
+        self.videoName = videoName
+        self.movementSequence = movementSequence
     }
 
     init(from decoder: Decoder) throws {
@@ -43,10 +47,13 @@ struct Exercise: Identifiable, Codable {
         duration = try container.decode(String.self, forKey: .duration)
         rating = try container.decode(Double.self, forKey: .rating)
         description = try container.decode(String.self, forKey: .description)
-        keyPoints = try container.decode([String].self, forKey: .keyPoints)
+        movementSequence = try container.decode([Position].self, forKey: .movementSequence)
         
-        color = .blue
+        videoName = String(try container.decode(String.self, forKey: .name).split(separator: " ").first!)
+        
+        color = .blue //  isn't Codable directly
     }
+
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -56,6 +63,7 @@ struct Exercise: Identifiable, Codable {
         try container.encode(duration, forKey: .duration)
         try container.encode(rating, forKey: .rating)
         try container.encode(description, forKey: .description)
-        try container.encode(keyPoints, forKey: .keyPoints)
+        try container.encode(movementSequence, forKey: .movementSequence)
     }
+
 }
