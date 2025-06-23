@@ -8,11 +8,13 @@
 
 import SwiftUI
 import AVFoundation
+import _AVKit_SwiftUI
 
 // MARK: wrapper for Mac Catalyst (unnsupported function solved)
 struct CameraSheetView: View {
     @Binding var showingCamera: Bool
     var exercise: Exercise
+    var videolink = "library-cross"
 
     var body: some View {
         VStack {
@@ -31,8 +33,36 @@ struct CameraSheetView: View {
             #endif
 
             Text(exercise.description)
+
+            if let player = loadPlayer(for: videolink) {
+                    VideoPlayer(player: player)
+                        .frame(height: 200)
+                        .background(Color.black.opacity(0))
+                        .onAppear { player.play() }
+                }
+
             CameraAnalysisView()
         }
+    }
+
+    func loadPlayer(for exercise: String) -> AVPlayer? {
+        if let url = Bundle.main.url(forResource: exercise, withExtension: "mp4") {
+            let player = AVPlayer(url: url)
+            
+            
+            NotificationCenter.default.addObserver(
+                    forName: .AVPlayerItemDidPlayToEndTime,
+                    object: player.currentItem,
+                    queue: .main
+                ) { _ in
+                    player.seek(to: .zero)
+                    player.play()
+                }
+                
+                return player
+            
+        }
+        return nil
     }
 }
 
