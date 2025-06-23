@@ -67,7 +67,10 @@ class SimpleYOLOAnalyzer: ObservableObject {
 //                self.userPoses = keypoints
 //            }
             //let badJoints: Set<Int> = calculateBadJoints(from: keypoints) // Optional logic
-            let badJoints: Set<Int> = Set()
+            var badJoints: Set<Int> = Set()
+            badJoints.insert(1)
+            badJoints.insert(2)
+            badJoints.insert(3)
             onPoseDetected?(keypoints, badJoints)
 
             
@@ -202,9 +205,11 @@ class SimpleYOLOAnalyzer: ObservableObject {
             let conf = ptr[(5 + kp * 3 + 2) * anchors + bestIndex]
 
             if conf > 0.5 {
-                keypoints.append(CGPoint(x: 1 - CGFloat(x) / 640.0, y: CGFloat(y) / 640.0)) // normalize
+                keypoints.append(CGPoint(x: 1 - CGFloat(x) / 640.0, y: CGFloat(y) / 640.0)) // normalized
+                print("normal kp _\(kp) with \(x), \(y)")
             } else {
-                keypoints.append(.zero)
+                keypoints.append(CGPoint(x: -1, y: -1))
+                print("abnormal kp _ \(kp)")
             }
         }
 

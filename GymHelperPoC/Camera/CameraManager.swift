@@ -177,7 +177,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
         )
 
         // Fast resize
-        vImageScale_ARGB8888(&srcBuffer, &dstBuffer, nil, vImage_Flags(0))
+        vImageScale_ARGB8888(&srcBuffer, &dstBuffer, nil, vImage_Flags(0)) // use Accelerate
 
         return dst
         
