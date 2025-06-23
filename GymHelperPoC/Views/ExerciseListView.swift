@@ -46,6 +46,7 @@ struct ExerciseListView: View {
             if let exercise = exerciseManager.selectedExercise {
                 
                 CameraSheetView(showingCamera: $showingCamera, exercise: exercise)
+                    .frame(minWidth: 600, minHeight: 800)
             }
         }
     }
