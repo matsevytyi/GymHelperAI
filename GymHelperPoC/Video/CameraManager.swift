@@ -133,15 +133,18 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
         }
     
     private func resizePixelBuffer(_ pixelBuffer: CVPixelBuffer, width: Int, height: Int) -> CVPixelBuffer? {
-        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
-        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly) }
+        
+        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly) // locked buffer
+        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly) } // unlock once function exits
 
+        // image properties and memory pointer
         guard let srcBaseAddr = CVPixelBufferGetBaseAddress(pixelBuffer) else { return nil }
 
         let srcWidth = CVPixelBufferGetWidth(pixelBuffer)
         let srcHeight = CVPixelBufferGetHeight(pixelBuffer)
         let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
 
+        // buffer from src
         var srcBuffer = vImage_Buffer(
             data: srcBaseAddr,
             height: vImagePixelCount(srcHeight),
@@ -149,6 +152,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
             rowBytes: bytesPerRow
         )
 
+        // buffer for dst
         var destPixelBuffer: CVPixelBuffer?
         CVPixelBufferCreate(
             nil,
@@ -161,6 +165,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
 
         guard let dst = destPixelBuffer else { return nil }
 
+        // lock the destination buffer and wrap it in vImage_Buffer
         CVPixelBufferLockBaseAddress(dst, [])
         defer { CVPixelBufferUnlockBaseAddress(dst, []) }
 
@@ -171,10 +176,11 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
             rowBytes: CVPixelBufferGetBytesPerRow(dst)
         )
 
-        //  Fast resize
+        // Fast resize
         vImageScale_ARGB8888(&srcBuffer, &dstBuffer, nil, vImage_Flags(0))
 
         return dst
+        
     }
 
     
