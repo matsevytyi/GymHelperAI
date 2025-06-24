@@ -47,11 +47,34 @@ struct CameraSheetView: View {
                         .frame(height: 200)
                         .background(Color.black.opacity(0))
                         .onAppear { player.play() }
+                        .onDisappear {
+                                    player.pause()
+                                    player.replaceCurrentItem(with: nil)
+                                }
                 }
 
             CameraAnalysisView(currentCheckpoint: exercise.movementSequence[currentStepIndex]) {
                 advanceStep()
             }
+            
+            if currentStepIndex < exercise.movementSequence.count - 1 {
+                    Button(action: {
+                        advanceStep()
+                    }) {
+                        HStack(spacing: 5) {
+                            Text("Next")
+                            Image(systemName: "arrow.right.circle.fill")
+                        }
+                        .font(.title2)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.blue)
+                        .cornerRadius(12)
+                        .shadow(radius: 4)
+                    }
+                    .padding()
+                }
         }
     }
 
@@ -104,6 +127,14 @@ struct CameraAnalysisView: View {
             
             PoseOverlay(poses: cameraManager.currentUserPoses, badJoints: currentBadJoints)
                 .allowsHitTesting(false)
+            
+//           Button(action: {
+//                              onPoseMatched()
+//                          }) {
+//                              Image(systemName: "xmark.circle.fill") //update here
+//                                  .font(.title)
+//                                  .padding()
+//                          }
         }
         
         .onChange(of: cameraManager.currentUserPoses)
@@ -111,16 +142,11 @@ struct CameraAnalysisView: View {
             guard !hasMatchedCurrentStep else { return }
             
             let (matched, badJoints) = checkPoseMatch(userPose: newPoses, basePose: currentCheckpoint)
+
+            self.currentBadJoints = badJoints
             
             if matched {
-                hasMatchedCurrentStep = true
                 onPoseMatched()
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    // next step matching
-                    hasMatchedCurrentStep = false
-                }
-                
             }
         }
     }

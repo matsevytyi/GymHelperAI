@@ -36,8 +36,8 @@ struct PoseOverlay: View {
                 let validConnections = connections.filter { (start, end) in
                     start < poses.count &&
                     end < poses.count &&
-                    poses[start].x >= 0 && poses[start].y >= 0 &&
-                    poses[end].x >= 0 && poses[end].y >= 0
+                    poses[start].x > 0 && poses[start].y > 0 &&
+                    poses[end].x > 0 && poses[end].y > 0
                 }
 
                 // overlay only valid connections
@@ -58,7 +58,7 @@ struct PoseOverlay: View {
                     .stroke(Color.white, lineWidth: 2)
                 }
                 
-                ForEach(Array(poses.enumerated()).filter { $0.element.x >= 0 && $0.element.y >= 0 }, id: \.0) { (index, point) in
+                ForEach(Array(poses.enumerated()).filter { $0.element.x > 0 && $0.element.y > 0 }, id: \.0) { (index, point) in
                     let isProblematic = badJoints.contains(index)
 
                     Circle()

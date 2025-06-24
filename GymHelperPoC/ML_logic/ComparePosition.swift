@@ -11,6 +11,18 @@ func checkPoseMatch(userPose: [CGPoint], basePose: Position) -> (Bool, Set<Int>)
     
     for (start, end) in connections {
         guard start < userPose.count, end < userPose.count else { continue }
+        
+        guard userPose[start].x > 0, userPose[start].y > 0 else {
+            print("no start keypoint detected")
+            problematicJoints.insert(start)
+            continue
+        }
+
+        guard userPose[end].x > 0, userPose[end].y > 0 else {
+            print("no end keypoint detected")
+            problematicJoints.insert(end)
+            continue
+        }
 
         let userVec = toVector(from: userPose[start], to: userPose[end])
         
@@ -28,16 +40,20 @@ func checkPoseMatch(userPose: [CGPoint], basePose: Position) -> (Bool, Set<Int>)
         guard let base = basePoints else { continue }
 
         //  order in basePose arrays matches joint pairs
-        let baseVec = toVector(from: base[0], to: base[1]) // You may need to improve indexing here
+        let baseVec = toVector(from: base[0], to: base[1])
 
         let angleDiff = angleBetweenVectors(userVec, baseVec)
-        if angleDiff > .pi / 8 { // ~22.5° threshold
+        if angleDiff > .pi / 16 || angleDiff < -.pi / 16 { // ~11.5° threshold
             problematicJoints.insert(start)
             problematicJoints.insert(end)
+            print("found problematic \(start), \(end)")
         }
     }
 
     let isMatch = problematicJoints.isEmpty
+
+    print("Problematic: \(problematicJoints)")
+
     return (isMatch, problematicJoints)
 }
 
@@ -46,9 +62,13 @@ func angleBetweenVectors(_ v1: CGVector, _ v2: CGVector) -> CGFloat {
     let mag1 = sqrt(v1.dx * v1.dx + v1.dy * v1.dy)
     let mag2 = sqrt(v2.dx * v2.dx + v2.dy * v2.dy)
     
-    guard mag1 > 0 && mag2 > 0 else { return .pi } // 180° if degenerate
+    guard mag1 > 0 && mag2 > 0 else {
+        print("error with \(mag1) or \(mag2)")
+        return .pi
+    } // 180° if degenerate
     
     let cosTheta = dot / (mag1 * mag2)
+    print("cosTheta: \(cosTheta)")
     return acos(max(-1, min(1, cosTheta))) // float errors solution
 }
 

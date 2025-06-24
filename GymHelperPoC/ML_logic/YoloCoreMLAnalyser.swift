@@ -189,7 +189,7 @@ class SimpleYOLOAnalyzer: ObservableObject {
                 keypoints.append(CGPoint(x: 1 - CGFloat(x) / 640.0, y: CGFloat(y) / 640.0)) // normalized
                 print("normal kp _\(kp) with \(x), \(y)")
             } else {
-                keypoints.append(CGPoint(x: -1, y: -1))
+                keypoints.append(CGPoint(x: 0, y: 0))
                 print("abnormal kp _ \(kp)")
             }
         }

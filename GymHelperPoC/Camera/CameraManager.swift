@@ -17,7 +17,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
     private var sessionQueue = DispatchQueue(label: "camera.session")
     private var videoQueue = DispatchQueue(label: "camera.video")
     
-    private var poseDetector = SimpleYOLOAnalyzer()
+    var poseDetector = SimpleYOLOAnalyzer()
     private let videoOutput = AVCaptureVideoDataOutput()
     
     @Published var currentUserPoses: [CGPoint] = []
