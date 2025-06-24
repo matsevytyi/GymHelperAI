@@ -51,6 +51,9 @@ func checkPoseMatch(userPose: [CGPoint], basePose: Position) -> (Bool, Set<Int>)
     }
 
     let isMatch = problematicJoints.isEmpty
+    
+    // Uncomment to check on inexperienced user
+    //let isMatch = problematicJoints.count < 3
 
     print("Problematic: \(problematicJoints)")
 
