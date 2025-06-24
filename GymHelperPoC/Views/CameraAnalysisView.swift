@@ -17,6 +17,7 @@ struct CameraSheetView: View {
 
     @State private var currentStepIndex = 0
     @State private var currentVideoName: String
+    @State private var player: AVPlayer = AVPlayer()
 
     init(showingCamera: Binding<Bool>, exercise: Exercise) {
         self._showingCamera = showingCamera
@@ -42,21 +43,13 @@ struct CameraSheetView: View {
 
             Text(exercise.description)
 
-            if let player = loadPlayer(for: currentVideoName) {
-                    VideoPlayer(player: player)
-                        .frame(height: 200)
-                        .background(Color.black.opacity(0))
-                        .onAppear { player.play() }
-                        .onDisappear {
-                                    player.pause()
-                                    player.replaceCurrentItem(with: nil)
-                                }
-                }
-
-            CameraAnalysisView(currentCheckpoint: exercise.movementSequence[currentStepIndex]) {
-                advanceStep()
+            VideoPlayer(player: player)
+            .frame(height: 200)
+            .background(Color.black.opacity(0))
+            .onAppear {
+                playVideo(named: currentVideoName)
             }
-            
+
             if currentStepIndex < exercise.movementSequence.count - 1 {
                     Button(action: {
                         advanceStep()
@@ -75,35 +68,45 @@ struct CameraSheetView: View {
                     }
                     .padding()
                 }
+
+            CameraAnalysisView(currentCheckpoint: exercise.movementSequence[currentStepIndex]) {
+                advanceStep()
+            }
         }
     }
 
-    func loadPlayer(for exercise: String) -> AVPlayer? {
-        if let url = Bundle.main.url(forResource: exercise, withExtension: "mp4") {
-            let player = AVPlayer(url: url)
+    func playVideo(named name: String) {
+        if let url = Bundle.main.url(forResource: name, withExtension: "mp4") {
+            let item = AVPlayerItem(url: url)
             
-            
+            NotificationCenter.default.removeObserver(self)
             NotificationCenter.default.addObserver(
-                    forName: .AVPlayerItemDidPlayToEndTime,
-                    object: player.currentItem,
-                    queue: .main
-                ) { _ in
-                    player.seek(to: .zero)
-                    player.play()
-                }
-                
-                return player
-            
+                forName: .AVPlayerItemDidPlayToEndTime,
+                object: item,
+                queue: .main
+            ) { _ in
+                player.seek(to: .zero)
+                player.play()
+            }
+
+            player.replaceCurrentItem(with: item)
+            player.play()
+
+            // MARK: mute and speed video settings
+            player.isMuted = true
+            player.rate = 0.3
         }
-        return nil
     }
+
 
     func advanceStep() {
         if currentStepIndex < exercise.movementSequence.count - 1 {
             currentStepIndex += 1
             currentVideoName = exercise.movementSequence[currentStepIndex].visual_lnk
+            playVideo(named: currentVideoName)
         }
     }
+
 
 }
 
@@ -127,14 +130,6 @@ struct CameraAnalysisView: View {
             
             PoseOverlay(poses: cameraManager.currentUserPoses, badJoints: currentBadJoints)
                 .allowsHitTesting(false)
-            
-//           Button(action: {
-//                              onPoseMatched()
-//                          }) {
-//                              Image(systemName: "xmark.circle.fill") //update here
-//                                  .font(.title)
-//                                  .padding()
-//                          }
         }
         
         .onChange(of: cameraManager.currentUserPoses)
