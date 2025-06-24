@@ -40,10 +40,15 @@ func checkPoseMatch(userPose: [CGPoint], basePose: Position) -> (Bool, Set<Int>)
         guard let base = basePoints else { continue }
 
         //  order in basePose arrays matches joint pairs
-        let baseVec = toVector(from: base[0], to: base[1])
+        let baseVec = toVector(from: base[1], to: base[0])
+
+        print("user: \(userPose[start]), base: \(base[0])")
+        print("user: \(userPose[end]), base: \(base[1])")
+        print("user: \(userVec), base: \(baseVec)")
+        print("angle: \(angleBetweenVectors(userVec, baseVec))")
 
         let angleDiff = angleBetweenVectors(userVec, baseVec)
-        if angleDiff > .pi / 16 || angleDiff < -.pi / 16 { // ~11.5° threshold
+        if angleDiff > .pi / 16 { // ~11.5° threshold
             problematicJoints.insert(start)
             problematicJoints.insert(end)
             print("found problematic \(start), \(end)")

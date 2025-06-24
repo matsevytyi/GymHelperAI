@@ -186,7 +186,8 @@ class SimpleYOLOAnalyzer: ObservableObject {
             let conf = ptr[(5 + kp * 3 + 2) * anchors + bestIndex]
             
             if conf > 0.5 {
-                keypoints.append(CGPoint(x: 1 - CGFloat(x) / 640.0, y: CGFloat(y) / 640.0)) // normalized
+                //keypoints.append(CGPoint(x: 1 - CGFloat(x) / 640.0, y: CGFloat(y) / 640.0)) // normalized
+                keypoints.append(CGPoint(x: CGFloat(x), y: CGFloat(y)))
                 print("normal kp _\(kp) with \(x), \(y)")
             } else {
                 keypoints.append(CGPoint(x: 0, y: 0))

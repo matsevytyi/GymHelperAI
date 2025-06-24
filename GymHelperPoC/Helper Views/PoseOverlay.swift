@@ -47,12 +47,12 @@ struct PoseOverlay: View {
 
                     Path { path in
                         path.move(to: CGPoint(
-                            x: p1.x * geometry.size.width,
-                            y: p1.y * geometry.size.height
+                            x: (1 - p1.x / 640) * geometry.size.width,
+                            y: p1.y / 640 * geometry.size.height
                         ))
                         path.addLine(to: CGPoint(
-                            x: p2.x * geometry.size.width,
-                            y: p2.y * geometry.size.height
+                            x: (1 - p2.x / 640) * geometry.size.width,
+                            y: p2.y / 640 * geometry.size.height
                         ))
                     }
                     .stroke(Color.white, lineWidth: 2)
@@ -65,8 +65,8 @@ struct PoseOverlay: View {
                         .fill(isProblematic ? Color.red : Color.green)
                         .frame(width: 8, height: 8)
                         .position(
-                            x: point.x * geometry.size.width,
-                            y: point.y * geometry.size.height
+                            x: (1 - point.x / 640) * geometry.size.width,
+                            y: point.y / 640 * geometry.size.height
                         )
                 }
 
