@@ -1,6 +1,6 @@
 # Boxing Helper
 
-**Boxing Helper** is an AI-powered mobile app that helps users improve their workout or martial arts techniques. It analyzes body movements based on video from user camera and gives real-time feedback. The app is designed to be accessible for beginners and those who don't have access to a personal coach due to cost, time, or comfort level. It provides a clear, engaging, and fault-tolerant UI/UX, integrates object detection and pose estimatio models and uses CoreML for Metal acceleration.
+**Boxing Helper** is an AI-powered mobile app that helps users improve their workout or martial arts techniques. It analyzes body movements based on video from user camera and gives real-time feedback. The app is designed to be accessible for beginners and those who don't have access to a personal coach due to cost, time, or comfort level. It provides a clear, engaging, and fault-tolerant UI/UX, integrates object detection and pose estimation models and uses CoreML for Metal acceleration.
 
 <p align="center">
   <img src="readme-assets/kjbkjb.png" alt="alt text" width="200" style="margin-right: 20px;" />
@@ -102,4 +102,5 @@ Boxing Helper addresses these shortcomings by focusing on accessibility, martial
 - Create separate pages for specific exercise pipelines
 - Enhance personalization and user feedback features
 - Adapt technology for other domains: dance instruction, sports, physical rehabilitation, workplace ergonomics
+
 
