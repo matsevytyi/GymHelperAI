@@ -9,7 +9,7 @@
 // TODO: replace with data load fron json file
 
 import SwiftUI
-import Combine
+//import Combine
 
 class ExerciseManager: ObservableObject {
     

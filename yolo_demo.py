@@ -3,7 +3,7 @@ import cv2
 import json
 
 model = YOLO("yolov8n-pose.pt")
-visual_lnk = "library-cross-jab-6"
+visual_lnk = "library-cross-jab-3"
 cap = cv2.VideoCapture(f"GymHelperPoC/Resources/cross-jab/{visual_lnk}.mp4")
 
 paused = False

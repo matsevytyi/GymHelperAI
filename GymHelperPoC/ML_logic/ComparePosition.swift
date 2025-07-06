@@ -48,17 +48,17 @@ func checkPoseMatch(userPose: [CGPoint], basePose: Position) -> (Bool, Set<Int>)
         print("angle: \(angleBetweenVectors(userVec, baseVec))")
 
         let angleDiff = angleBetweenVectors(userVec, baseVec)
-        if angleDiff > .pi / 16 { // ~11.5° threshold
+        if angleDiff > .pi / 8 { // ~11.5° threshold
             problematicJoints.insert(start)
-            problematicJoints.insert(end)
+            //problematicJoints.insert(end)
             print("found problematic \(start), \(end)")
         }
     }
 
-    let isMatch = problematicJoints.isEmpty
+    //let isMatch = problematicJoints.isEmpty
     
     // Uncomment to check on inexperienced user
-    //let isMatch = problematicJoints.count < 3
+    let isMatch = problematicJoints.count < 3
 
     print("Problematic: \(problematicJoints)")
 

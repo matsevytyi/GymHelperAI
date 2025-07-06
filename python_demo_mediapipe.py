@@ -211,8 +211,8 @@ def main():
 
     comparator = PoseVideoComparator()
     
-    video1_path = "perfect_test.mp4" 
-    video2_path = "perfect_test.mp4"
+    video1_path = "GymHelperPoC/Resources/cross-jab/library-cross-jab-3.mp4" 
+    video2_path = "GymHelperPoC/Resources/cross-jab/library-cross-jab-3.mp4"
     
     print("=== AI-Powered Sport Assistant: Pose Comparison Demo ===")
     print(f"Processing videos:")

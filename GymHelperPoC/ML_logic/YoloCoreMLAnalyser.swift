@@ -7,7 +7,6 @@
 
 import SwiftUI
 import AVKit
-import Vision
 import CoreML
 
 class SimpleYOLOAnalyzer: ObservableObject {

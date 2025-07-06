@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-import AVKit
-import Vision
 import CoreML
 
 struct PoseOverlay: View {
